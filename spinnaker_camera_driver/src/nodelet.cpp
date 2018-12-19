@@ -119,41 +119,41 @@ private:
 
     try
     {
-//      NODELET_DEBUG_ONCE("Dynamic reconfigure callback with level: %u", level);
-//      spinnaker_.setNewConfiguration(config, level);
-//
-//      // Store needed parameters for the metadata message
-//      gain_ = config.gain;
-//      wb_blue_ = config.white_balance_blue_ratio;
-//      wb_red_ = config.white_balance_red_ratio;
-//
-//      // No separate param in CameraInfo for binning/decimation
-//      binning_x_ = config.image_format_x_binning * config.image_format_x_decimation;
-//      binning_y_ = config.image_format_y_binning * config.image_format_y_decimation;
-//
-//      // Store CameraInfo RegionOfInterest information
-//      // TODO(mhosmar): Not compliant with CameraInfo message: "A particular ROI always denotes the
-//      //                same window of pixels on the camera sensor, regardless of binning settings."
-//      //                These values are in the post binned frame.
-//      if ((config.image_format_roi_width + config.image_format_roi_height) > 0 &&
-//          (config.image_format_roi_width < spinnaker_.getWidthMax() ||
-//           config.image_format_roi_height < spinnaker_.getHeightMax()))
-//      {
-//        roi_x_offset_ = config.image_format_x_offset;
-//        roi_y_offset_ = config.image_format_y_offset;
-//        roi_width_ = config.image_format_roi_width;
-//        roi_height_ = config.image_format_roi_height;
-//        do_rectify_ = true;  // Set to true if an ROI is used.
-//      }
-//      else
-//      {
-//        // Zeros mean the full resolution was captured.
-//        roi_x_offset_ = 0;
-//        roi_y_offset_ = 0;
-//        roi_height_ = 0;
-//        roi_width_ = 0;
-//        do_rectify_ = false;  // Set to false if the whole image is captured.
-//      }
+      NODELET_DEBUG_ONCE("Dynamic reconfigure callback with level: %u", level);
+      spinnaker_.setNewConfiguration(config, level);
+
+      // Store needed parameters for the metadata message
+      gain_ = config.gain;
+      wb_blue_ = config.white_balance_blue_ratio;
+      wb_red_ = config.white_balance_red_ratio;
+
+      // No separate param in CameraInfo for binning/decimation
+      binning_x_ = config.image_format_x_binning * config.image_format_x_decimation;
+      binning_y_ = config.image_format_y_binning * config.image_format_y_decimation;
+
+      // Store CameraInfo RegionOfInterest information
+      // TODO(mhosmar): Not compliant with CameraInfo message: "A particular ROI always denotes the
+      //                same window of pixels on the camera sensor, regardless of binning settings."
+      //                These values are in the post binned frame.
+      if ((config.image_format_roi_width + config.image_format_roi_height) > 0 &&
+          (config.image_format_roi_width < spinnaker_.getWidthMax() ||
+           config.image_format_roi_height < spinnaker_.getHeightMax()))
+      {
+        roi_x_offset_ = config.image_format_x_offset;
+        roi_y_offset_ = config.image_format_y_offset;
+        roi_width_ = config.image_format_roi_width;
+        roi_height_ = config.image_format_roi_height;
+        do_rectify_ = true;  // Set to true if an ROI is used.
+      }
+      else
+      {
+        // Zeros mean the full resolution was captured.
+        roi_x_offset_ = 0;
+        roi_y_offset_ = 0;
+        roi_height_ = 0;
+        roi_width_ = 0;
+        do_rectify_ = false;  // Set to false if the whole image is captured.
+      }
     }
     catch (std::runtime_error& e)
     {
