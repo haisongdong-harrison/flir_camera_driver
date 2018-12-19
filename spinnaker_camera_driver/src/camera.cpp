@@ -127,11 +127,11 @@ void Camera::setNewConfiguration(const SpinnakerConfig& config, const uint32_t& 
     }
 
     // Set gain
-    setProperty(node_map_, "GainSelector", config.gain_selector);
+    //setProperty(node_map_, "GainSelector", config.gain_selector);
     setProperty(node_map_, "GainAuto", config.auto_gain);
     if (config.auto_gain.compare(std::string("Off")) == 0)
     {
-      setProperty(node_map_, "Gain", static_cast<float>(config.gain));
+      //setProperty(node_map_, "Gain", static_cast<float>(config.gain));
     }
 
     // Set brightness
@@ -150,10 +150,10 @@ void Camera::setNewConfiguration(const SpinnakerConfig& config, const uint32_t& 
       setProperty(node_map_, "BalanceWhiteAuto", config.auto_white_balance);
       if (config.auto_white_balance.compare(std::string("Off")) == 0)
       {
-        setProperty(node_map_, "BalanceRatioSelector", "Blue");
-        setProperty(node_map_, "BalanceRatio", static_cast<float>(config.white_balance_blue_ratio));
-        setProperty(node_map_, "BalanceRatioSelector", "Red");
-        setProperty(node_map_, "BalanceRatio", static_cast<float>(config.white_balance_red_ratio));
+        //setProperty(node_map_, "BalanceRatioSelector", "Blue");
+        //setProperty(node_map_, "BalanceRatio", static_cast<float>(config.white_balance_blue_ratio));
+        //setProperty(node_map_, "BalanceRatioSelector", "Red");
+        //setProperty(node_map_, "BalanceRatio", static_cast<float>(config.white_balance_red_ratio));
       }
     }
   }
