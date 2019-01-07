@@ -77,6 +77,7 @@ class SpinnakerCameraNodelet : public nodelet::Nodelet
 public:
   SpinnakerCameraNodelet()
   {
+	  initialized_ = false;
   }
 
   ~SpinnakerCameraNodelet()
@@ -112,7 +113,7 @@ private:
   * is currently using.
   * \param level driver_base reconfiguration level.  See driver_base/SensorLevels.h for more information.
   */
-
+  bool initialized_;
   void paramCallback(const spinnaker_camera_driver::SpinnakerConfig& config, uint32_t level)
   {
     config_ = config;
@@ -120,6 +121,15 @@ private:
     try
     {
       NODELET_DEBUG_ONCE("Dynamic reconfigure callback with level: %u", level);
+
+      if(!initialized_)
+      {
+    	    //here add all the parameters to be set at launch time.
+    	    ros::NodeHandle& pnh = getMTPrivateNodeHandle();
+    	    pnh.param<int>("image_format_x_binning", config.image_format_x_binning);
+    	    pnh.param<int>("image_format_y_binning", config.image_format_y_binning);
+    	    initialized_ = true;
+      }
       spinnaker_.setNewConfiguration(config, level);
 
       // Store needed parameters for the metadata message
