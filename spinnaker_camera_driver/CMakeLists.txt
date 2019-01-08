@@ -52,23 +52,16 @@ include_directories(include)
 
 add_library(SpinnakerCameraLib src/SpinnakerCamera.cpp)
 
+
+
+
 # Include the Spinnaker Libs
 target_link_libraries(SpinnakerCameraLib
                       Camera
-                      ${Spinnaker_LIB}
+                      Spinnaker
+                      #${Spinnaker_LIB}
                       ${catkin_LIBRARIES}
                       ${OpenCV_LIBRARIES})
-
-
-# Test Executable for Spinnaker
-#add_executable(spinnaker_test_node
-#              src/spinnaker_test_node.cpp
-#)
-
-#target_link_libraries(spinnaker_test_node
-#  SpinnakerCameraLib
-#  ${catkin_LIBRARIES}
-#)
 
 
 add_dependencies(SpinnakerCameraLib ${PROJECT_NAME}_gencfg)
@@ -88,6 +81,15 @@ target_link_libraries(SpinnakerCameraNodelet SpinnakerCameraLib Camera Cm3 ${cat
 add_executable(spinnaker_camera_node src/node.cpp)
 target_link_libraries(spinnaker_camera_node SpinnakerCameraLib ${catkin_LIBRARIES})
 set_target_properties(spinnaker_camera_node PROPERTIES OUTPUT_NAME camera_node PREFIX "")
+
+
+# Test Executable for Spinnaker
+add_executable(spinnaker_test_node src/spinnaker_test_node.cpp)
+
+target_link_libraries(spinnaker_test_node
+  					  SpinnakerCameraLib
+                      ${catkin_LIBRARIES})
+
 
 install(TARGETS
   SpinnakerCameraLib
