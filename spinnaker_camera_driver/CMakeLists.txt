@@ -6,64 +6,62 @@ set_directory_properties(PROPERTIES COMPILE_OPTIONS "-std=c++11;-Wall;-Wextra")
 project(spinnaker_camera_driver)
 
 find_package(catkin REQUIRED COMPONENTS
-  camera_info_manager diagnostic_updater dynamic_reconfigure
-  image_exposure_msgs image_transport nodelet roscpp sensor_msgs
-  wfov_camera_msgs
-)
+  			 camera_info_manager
+  			 diagnostic_updater
+  			 dynamic_reconfigure
+  			 image_exposure_msgs
+  			 image_transport
+  			 nodelet
+  			 roscpp
+  			 sensor_msgs
+  			 wfov_camera_msgs)
 
 find_package(OpenCV REQUIRED)
 
-generate_dynamic_reconfigure_options(
-  cfg/Spinnaker.cfg
-)
+generate_dynamic_reconfigure_options(cfg/Spinnaker.cfg)
 
 catkin_package(CATKIN_DEPENDS
-  image_exposure_msgs nodelet roscpp sensor_msgs wfov_camera_msgs
-  DEPENDS OpenCV
-)
+  			   image_exposure_msgs
+  			   nodelet
+  			   roscpp
+  			   sensor_msgs
+  			   wfov_camera_msgs
+  			   DEPENDS OpenCV)
 
+unset(SPINNAKER_FOUND)
+unset(SPINNAKER_INCLUDE_DIRS)
+unset(SPINNAKER_LIB)
 
-# If Spinnacker is already present, use the found version. If not, download it.
-# We can't resolve this dependency using the usual rosdep means because
-# the Point Grey EULA prohibits redistributing the headers or the packages which
-# contains them. We work around this by downloading the archive directly from
-# their website during this step in the build process.
-find_library(Spinnaker_LIBRARIES Spinnaker)
-# if(NOT Spinnaker_LIBRARIES)
-  message(STATUS "libSpinnaker not found in system library path")
-  include(cmake/DownloadSpinnaker.cmake)
-  download_spinnaker(Spinnaker_LIBRARIES Spinnaker_INCLUDE_DIRS)
-# endif()
+find_path(SPINNAKER_INCLUDE_DIRS NAMES
+		  Spinnaker.h
+		  HINTS
+		  /usr/include/spinnaker/
+		  /usr/local/include/spinnaker/)
 
-message(STATUS "libSpinnaker library: ${Spinnaker_LIBRARIES}")
-message(STATUS "libSpinnaker include: ${Spinnaker_INCLUDE_DIRS}")
+find_library(SPINNAKER_LIB NAMES Spinnaker
+		     HINTS
+		     /usr/lib
+		     /usr/local/lib)
 
 
 include_directories(SYSTEM
-                    ${Spinnaker_INCLUDE_DIRS}
+                    ${SPINNAKER_INCLUDE_DIRS}
                     ${catkin_INCLUDE_DIRS}
                     ${OpenCV_INCLUDE_DIRS})
 include_directories(include)
 
 add_library(SpinnakerCameraLib src/SpinnakerCamera.cpp)
 
+
+
+
 # Include the Spinnaker Libs
 target_link_libraries(SpinnakerCameraLib
                       Camera
-                      ${Spinnaker_LIBRARIES}
+                      Spinnaker
+                      #${Spinnaker_LIB}
                       ${catkin_LIBRARIES}
                       ${OpenCV_LIBRARIES})
-
-
-# Test Executable for Spinnaker
-add_executable(spinnaker_test_node
-              src/spinnaker_test_node.cpp
-)
-
-target_link_libraries(spinnaker_test_node
-  SpinnakerCameraLib
-  ${catkin_LIBRARIES}
-)
 
 
 add_dependencies(SpinnakerCameraLib ${PROJECT_NAME}_gencfg)
@@ -83,6 +81,15 @@ target_link_libraries(SpinnakerCameraNodelet SpinnakerCameraLib Camera Cm3 ${cat
 add_executable(spinnaker_camera_node src/node.cpp)
 target_link_libraries(spinnaker_camera_node SpinnakerCameraLib ${catkin_LIBRARIES})
 set_target_properties(spinnaker_camera_node PROPERTIES OUTPUT_NAME camera_node PREFIX "")
+
+
+# Test Executable for Spinnaker
+add_executable(spinnaker_test_node src/spinnaker_test_node.cpp)
+
+target_link_libraries(spinnaker_test_node
+  					  SpinnakerCameraLib
+                      ${catkin_LIBRARIES})
+
 
 install(TARGETS
   SpinnakerCameraLib
