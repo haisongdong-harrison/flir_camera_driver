@@ -29,6 +29,12 @@ ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSI
   <arg name="camera_name" default="camera" />
   <arg name="camera_serial" default="18284530" />
   <arg name="calibrated" default="0" />
+  <arg name="crop_image" default="false"/>
+  <arg name="image_height" default="2048"/>
+  <arg name="image_width" default="2448"/>
+  <arg name="x_offset" default="0"/>
+  <arg name="y_offset" default="0"/>
+  <arg name="bin_image" default="false"/>
   <arg name="h_binning" default="1"/>
   <arg name="v_binning" default="1"/>
 
