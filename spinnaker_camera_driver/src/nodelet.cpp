@@ -78,6 +78,7 @@ public:
   SpinnakerCameraNodelet()
   {
 	  initialized_ = false;
+	  binning_ci_bypass_ = 1;
   }
 
   ~SpinnakerCameraNodelet()
@@ -302,6 +303,11 @@ private:
     pnh.param<std::string>("camera_info_url", camera_info_url, "");
     // Get the desired frame_id, set to 'camera' if not found
     pnh.param<std::string>("frame_id", frame_id_, "camera");
+
+    //Dirty Hack to get Rectification working, this will dissapear after calibration is done properly.
+    pnh.param<int>("binning_ci_bypass", binning_ci_bypass_,1);
+
+
     // Do not call the connectCb function until after we are done initializing.
     std::lock_guard<std::mutex> scopedLock(connect_mutex_);
 
@@ -555,8 +561,8 @@ private:
             ci_->header.stamp = wfov_image->image.header.stamp;
             ci_->header.frame_id = wfov_image->header.frame_id;
             // The height, width, distortion model, and parameters are all filled in by camera info manager.
-            ci_->binning_x = 1;//binning_x_; DIRTY HACK
-            ci_->binning_y = 1;//binning_y_;
+            ci_->binning_x = binning_ci_bypass_;// DIRTY HACK //binning_x_
+            ci_->binning_y = binning_ci_bypass_;// DIRTY HACK //binning_y_
             ci_->roi.x_offset = roi_x_offset_;
             ci_->roi.y_offset = roi_y_offset_;
             ci_->roi.height = roi_height_;
@@ -668,6 +674,8 @@ private:
   int packet_size_;
   /// GigE packet delay:
   int packet_delay_;
+
+  int binning_ci_bypass_;
 
   /// Configuration:
   spinnaker_camera_driver::SpinnakerConfig config_;
