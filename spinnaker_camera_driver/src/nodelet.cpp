@@ -555,8 +555,8 @@ private:
             ci_->header.stamp = wfov_image->image.header.stamp;
             ci_->header.frame_id = wfov_image->header.frame_id;
             // The height, width, distortion model, and parameters are all filled in by camera info manager.
-            ci_->binning_x = binning_x_;
-            ci_->binning_y = binning_y_;
+            ci_->binning_x = 1;//binning_x_; DIRTY HACK
+            ci_->binning_y = 1;//binning_y_;
             ci_->roi.x_offset = roi_x_offset_;
             ci_->roi.y_offset = roi_y_offset_;
             ci_->roi.height = roi_height_;
