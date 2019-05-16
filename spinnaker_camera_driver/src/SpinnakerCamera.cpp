@@ -328,9 +328,19 @@ void SpinnakerCamera::grabImage(sensor_msgs::Image* image, const std::string& fr
       }
       else
       {
+        // Extract Chunk Data from image
+        image_metadata_ = image_ptr->GetChunkData();
+
         // Set Image Time Stamp
-        image->header.stamp.sec = image_ptr->GetTimeStamp() * 1e-9;
-        image->header.stamp.nsec = image_ptr->GetTimeStamp();
+        // JMG - This doesn't work.
+        //  Issue 1: GetTimeStamp() is returning time in microseconds instead of ns. Should multiply by 1e-6 instead.
+        //  Issue 2: When setting nsec, the sec component should be subtracted from GetTimeStamp(). 
+        //  Issue 3: Driver seems to be returning system time, which isn't very accurate...
+        // image->header.stamp.sec = image_ptr->GetTimeStamp() * 1e-9;
+        // image->header.stamp.nsec = image_ptr->GetTimeStamp();
+
+        // Replace header timestamp with image_metadata_ (requires chunk data timestamp enabled otherwise always 0)
+        image->header.stamp.fromNSec(image_metadata_.GetTimestamp());
 
         // Check the bits per pixel.
         size_t bitsPerPixel = image_ptr->GetBitsPerPixel();
