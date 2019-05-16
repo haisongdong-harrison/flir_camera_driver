@@ -158,6 +158,41 @@ void Camera::setNewConfiguration(const SpinnakerConfig& config, const uint32_t& 
         //setProperty(node_map_, "BalanceRatio", static_cast<float>(config.white_balance_red_ratio));
       }
     }
+
+    if (level >= LEVEL_RECONFIGURE_STOP)
+    { 
+      // Activate chunk mode
+      //
+      // *** NOTES ***
+      // Once enabled, chunk data will be available at the end of the payload
+      // of every image captured until it is disabled. Chunk data can also be
+      // retrieved from the nodemap.
+      //
+      if(IsAvailable(node_map_->GetNode("ChunkModeActive")))
+        setProperty(node_map_, "ChunkModeActive", config.chunk_mode_active);
+      
+      if(IsAvailable(node_map_->GetNode("ChunkSelector")) && IsAvailable(node_map_->GetNode("ChunkEnable")))
+      {
+        setProperty(node_map_, "ChunkSelector", std::string("FrameID"));
+        setProperty(node_map_, "ChunkEnable", config.chunk_frame_id);        
+        setProperty(node_map_, "ChunkSelector", std::string("OffsetX"));
+        setProperty(node_map_, "ChunkEnable", config.chunk_offset_x);
+        setProperty(node_map_, "ChunkSelector", std::string("OffsetY"));
+        setProperty(node_map_, "ChunkEnable", config.chunk_offset_y);
+        setProperty(node_map_, "ChunkSelector", std::string("Width"));
+        setProperty(node_map_, "ChunkEnable", config.chunk_width);
+        setProperty(node_map_, "ChunkSelector", std::string("Height"));
+        setProperty(node_map_, "ChunkEnable", config.chunk_height);
+        setProperty(node_map_, "ChunkSelector", std::string("ExposureTime"));
+        setProperty(node_map_, "ChunkEnable", config.chunk_exposure_time);
+        setProperty(node_map_, "ChunkSelector", std::string("PixelFormat"));
+        setProperty(node_map_, "ChunkEnable", config.chunk_pixel_format);
+        setProperty(node_map_, "ChunkSelector", std::string("Timestamp"));
+        setProperty(node_map_, "ChunkEnable", config.chunk_timestamp);
+        setProperty(node_map_, "ChunkSelector", std::string("SequencerSetActive"));
+        setProperty(node_map_, "ChunkEnable", config.chunk_sequencer_set_active);
+      }
+    }
   }
   catch (const Spinnaker::Exception& e)
   {
