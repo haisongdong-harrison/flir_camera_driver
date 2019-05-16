@@ -56,6 +56,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <image_transport/image_transport.h>          // ROS library that allows sending compressed images
 #include <camera_info_manager/camera_info_manager.h>  // ROS library that publishes CameraInfo topics
 #include <sensor_msgs/CameraInfo.h>                   // ROS message header for CameraInfo
+#include <std_msgs/Time.h>                            // ROS message for external timestamp
 
 #include <wfov_camera_msgs/WFOVImage.h>
 #include <image_exposure_msgs/ExposureSequence.h>  // Message type for configuring gain and white balance.
@@ -79,6 +80,8 @@ public:
   {
 	  initialized_ = false;
 	  binning_ci_bypass_ = 1;
+    extern_stamp.fromSec(0);
+    extern_stamp_offset.fromSec(0);
   }
 
   ~SpinnakerCameraNodelet()
@@ -170,6 +173,12 @@ private:
     {
       NODELET_ERROR("Reconfigure Callback failed with error: %s", e.what());
     }
+  }
+
+  void externalTimestamp_Callback(const std_msgs::Time::ConstPtr &msg)
+  {
+    std::lock_guard<std::mutex> scopedLock(extern_stamp_mutex);
+    extern_stamp = msg->data;
   }
 
   /*!
@@ -351,6 +360,9 @@ private:
         nh.advertise<wfov_camera_msgs::WFOVImage>("image", 5, cb2, cb2), updater_,
         diagnostic_updater::FrequencyStatusParam(&min_freq_, &max_freq_, freq_tolerance, window_size),
         diagnostic_updater::TimeStampStatusParam(min_acceptable, max_acceptable)));
+
+    extern_timestamp_sub = nh.subscribe("extern_timestamp", 1,
+        &spinnaker_camera_driver::SpinnakerCameraNodelet::externalTimestamp_Callback, this);
   }
 
   /**
@@ -405,6 +417,8 @@ private:
 
     State state = DISCONNECTED;
     State previous_state = NONE;
+    
+    std::unique_lock<std::mutex> stamp_lock(extern_stamp_mutex, std::defer_lock);
 
     while (!boost::this_thread::interruption_requested())  // Block until we need to stop this thread.
     {
@@ -552,7 +566,16 @@ private:
 
             // wfov_image->temperature = spinnaker_.getCameraTemperature();
 
-            ros::Time time = ros::Time::now();
+            // If external timestamp exists, use it.
+            stamp_lock.lock();
+            if(!extern_stamp.isZero())
+            {
+              extern_stamp_offset = extern_stamp - wfov_image->image.header.stamp;
+              extern_stamp.fromSec(0);
+            }
+            stamp_lock.unlock();
+
+            ros::Time time = (extern_stamp_offset.isZero()) ? ros::Time::now() : wfov_image->image.header.stamp + extern_stamp_offset;
             wfov_image->header.stamp = time;
             wfov_image->image.header.stamp = time;
 
@@ -679,6 +702,12 @@ private:
 
   /// Configuration:
   spinnaker_camera_driver::SpinnakerConfig config_;
+
+  // External Timestamp source:
+  ros::Subscriber extern_timestamp_sub;
+  ros::Time extern_stamp;
+  ros::Duration extern_stamp_offset;
+  std::mutex extern_stamp_mutex;
 };
 
 PLUGINLIB_EXPORT_CLASS(spinnaker_camera_driver::SpinnakerCameraNodelet,
