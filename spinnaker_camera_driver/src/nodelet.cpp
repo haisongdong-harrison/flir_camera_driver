@@ -57,6 +57,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <camera_info_manager/camera_info_manager.h>  // ROS library that publishes CameraInfo topics
 #include <sensor_msgs/CameraInfo.h>                   // ROS message header for CameraInfo
 #include <std_msgs/Time.h>                            // ROS message for external timestamp
+#include <std_msgs/Empty.h>                           // ROS message for ready to receive frames
 
 #include <wfov_camera_msgs/WFOVImage.h>
 #include <image_exposure_msgs/ExposureSequence.h>  // Message type for configuring gain and white balance.
@@ -82,6 +83,7 @@ public:
 	  binning_ci_bypass_ = 1;
     extern_stamp.fromSec(0);
     extern_stamp_offset.fromSec(0);
+    init_recv_ready = true;
   }
 
   ~SpinnakerCameraNodelet()
@@ -363,6 +365,8 @@ private:
 
     extern_timestamp_sub = nh.subscribe("extern_timestamp", 1,
         &spinnaker_camera_driver::SpinnakerCameraNodelet::externalTimestamp_Callback, this);
+
+    recv_ready_pub = nh.advertise<std_msgs::Empty>("recv_ready", 1);
   }
 
   /**
@@ -553,6 +557,14 @@ private:
           try
           {
             wfov_camera_msgs::WFOVImagePtr wfov_image(new wfov_camera_msgs::WFOVImage);
+
+            if(init_recv_ready)
+            {
+              init_recv_ready = false;
+              std_msgs::Empty Empty_msg;
+              recv_ready_pub.publish(Empty_msg);
+            }
+
             // Get the image from the camera library
             NODELET_DEBUG_ONCE("Starting a new grab from camera with serial {%d}.", spinnaker_.getSerial());
             spinnaker_.grabImage(&wfov_image->image, frame_id_);
@@ -704,10 +716,13 @@ private:
   spinnaker_camera_driver::SpinnakerConfig config_;
 
   // External Timestamp source:
+  bool init_recv_ready;
+  ros::Publisher recv_ready_pub;
+
   ros::Subscriber extern_timestamp_sub;
   ros::Time extern_stamp;
   ros::Duration extern_stamp_offset;
-  std::mutex extern_stamp_mutex;
+  std::mutex extern_stamp_mutex;  
 };
 
 PLUGINLIB_EXPORT_CLASS(spinnaker_camera_driver::SpinnakerCameraNodelet,
